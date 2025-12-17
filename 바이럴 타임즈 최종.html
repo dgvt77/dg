@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Viral Times: Reporter's Desk</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* 폰트 및 기본 설정 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=Nanum+Myeongjo:wght@700&display=swap');
+
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: 'Noto Sans KR', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none; /* 드래그 방지 */
+        }
+
+        /* === -1. 랜딩 화면 (타이틀) === */
+        #landing-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #111; z-index: 400;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        }
+        .landing-title {
+            font-family: 'Nanum Myeongjo', serif; font-size: 4.5rem; color: #d63031;
+            margin-bottom: 20px; letter-spacing: 10px;
+            text-shadow: 4px 4px 0px #fff;
+            animation: titlePulse 3s infinite ease-in-out;
+        }
+        .landing-subtitle {
+            font-size: 1.4rem; color: #888; margin-bottom: 80px; letter-spacing: 2px;
+        }
+        .main-start-btn {
+            padding: 20px 60px; font-size: 1.8rem; background-color: #fff; color: #000; border: none;
+            cursor: pointer; font-family: 'Noto Sans KR', sans-serif; font-weight: 900; transition: all 0.2s;
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+        }
+        .main-start-btn:hover {
+            background-color: #d63031; color: #fff; transform: scale(1.1);
+            box-shadow: 0 0 40px rgba(214, 48, 49, 0.6);
+        }
+
+        /* === 0. 인트로 화면 (오프닝) === */
+        #intro-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #000;
+            z-index: 300;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .intro-title {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 3rem;
+            color: #d63031;
+            margin-bottom: 40px;
+            letter-spacing: 5px;
+            animation: fadeIn 2s ease-in;
+        }
+
+        .intro-text {
+            font-size: 1.2rem;
+            line-height: 2;
+            max-width: 800px;
+            color: #ccc;
+            margin-bottom: 50px;
+            white-space: pre-line;
+            word-break: keep-all; 
+        }
+
+        .start-btn {
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            background-color: #d63031;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-weight: bold;
+            transition: all 0.3s;
+            opacity: 0;
+            animation: fadeIn 1s ease-in 1.5s forwards; 
+        }
+        .start-btn:hover {
+            background-color: #b71c1c;
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(214, 48, 49, 0.5);
+        }
+
+        /* === 0.5 스토리 화면 (업무 지시) === */
+        #story-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #111;
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .story-narration {
+            font-size: 1.3rem;
+            color: #ccc;
+            margin-bottom: 40px;
+            text-align: center;
+            line-height: 1.8;
+            opacity: 0;
+            animation: fadeIn 1s ease-in forwards;
+            word-break: keep-all;
+        }
+
+        .dialogue-box {
+            background-color: #2c3e50;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+            opacity: 0;
+            animation: slideUp 0.8s ease-out 1s forwards;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .speaker-name {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background-color: #f1c40f;
+            color: #000;
+            padding: 5px 15px;
+            font-weight: 900;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            border: 2px solid #fff;
+        }
+
+        .dialogue-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #fff;
+            word-break: keep-all;
+        }
+
+        .go-btn {
+            margin-top: 50px;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            background-color: #fff;
+            color: #000;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            opacity: 0;
+            animation: fadeIn 1s ease-in 2s forwards;
+            transition: transform 0.2s;
+        }
+        .go-btn:hover { transform: scale(1.1); background-color: #ddd; }
+
+        /* === Day Transition (날짜/이벤트 컷신) === */
+        #day-transition-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #000; z-index: 500;
+            display: none; 
+            flex-direction: column; justify-content: center; align-items: center;
+        }
+        #day-transition-text {
+            font-family: 'Nanum Myeongjo', serif; 
+            font-size: 5rem; 
+            color: #fff;
+            font-weight: 900;
+            letter-spacing: 5px;
+            opacity: 0;
+        }
+        #day-transition-event {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 2.2rem;
+            color: #d63031;
+            font-weight: bold;
+            margin-top: 30px;
+            opacity: 0;
+            text-shadow: 2px 2px 0px #000;
+        }
+        .day-anim-active {
+            animation: dayFadeInOut 3s ease-in-out forwards;
+        }
+        @keyframes dayFadeInOut {
+            0% { opacity: 0; transform: scale(0.9); }
+            25% { opacity: 1; transform: scale(1); }
+            75% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.1); }
+        }
+
+        /* === 긴급 제보 알림 (Toast) === */
+        #turn-notification {
+            position: absolute; top: 30%; left: 50%; transform: translateX(-50%);
+            background: rgba(214, 48, 49, 0.95); color: white;
+            padding: 25px 40px; border-radius: 10px; border: 3px solid #fff;
+            font-size: 1.4rem; font-weight: bold;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.7);
+            z-index: 600; display: none; text-align: center;
+            width: 80%; max-width: 600px;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            word-break: keep-all;
+        }
+        @keyframes popIn { from { transform: translateX(-50%) scale(0.5); opacity: 0; } to { transform: translateX(-50%) scale(1); opacity: 1; } }
+
+        /* === 스마트폰 메신저 UI === */
+        #smartphone-container {
+            position: fixed; bottom: 20px; right: 20px; z-index: 300;
+            display: none; /* 게임 시작 후 표시 */
+        }
+        #smartphone-btn {
+            width: 70px; height: 70px; background-color: #2ecc71;
+            border-radius: 50%; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 2.5rem; cursor: pointer; position: relative;
+            transition: transform 0.2s; border: 3px solid #fff;
+        }
+        #smartphone-btn:hover { transform: scale(1.1); }
+        #msg-badge {
+            position: absolute; top: -5px; right: -5px;
+            background-color: #e74c3c; color: white;
+            width: 25px; height: 25px; border-radius: 50%;
+            font-size: 0.9rem; font-weight: bold;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        #smartphone-screen {
+            position: absolute; bottom: 90px; right: 0;
+            width: 320px; height: 450px;
+            background-color: #fff; border: 4px solid #333;
+            border-radius: 20px; overflow: hidden;
+            display: none; flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: slideUpPhone 0.3s ease-out;
+        }
+        @keyframes slideUpPhone { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .phone-header {
+            background-color: #34495e; color: white; padding: 15px;
+            font-weight: bold; font-size: 1.1rem; display: flex; justify-content: space-between;
+        }
+        .phone-body {
+            flex: 1; background-color: #ecf0f1; padding: 15px;
+            overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+        }
+        .msg-bubble {
+            background-color: white; color: #333; padding: 10px 15px;
+            border-radius: 10px; font-size: 0.95rem; line-height: 1.4;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 90%;
+            align-self: flex-start; position: relative;
+            word-break: keep-all;
+        }
+        .msg-bubble.system {
+            background-color: #f1c40f; color: #000; font-size: 0.85rem;
+            align-self: center; text-align: center; font-weight: bold;
+        }
+        .msg-sender {
+            font-size: 0.8rem; color: #7f8c8d; margin-bottom: 4px; display: block; font-weight: bold;
+        }
+        .close-phone { cursor: pointer; }
+
+        /* === 0.8 인게임 대화 오버레이 (이벤트용) === */
+        #dialogue-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            z-index: 150; 
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .npc-dialogue-area {
+            width: 100%; max-width: 800px;
+            background-color: #34495e; border: 3px solid #ecf0f1; border-radius: 15px; padding: 30px;
+            position: relative; margin-bottom: 50px; min-height: 150px;
+            display: flex; align-items: center; cursor: pointer; transition: background-color 0.2s;
+        }
+        .npc-dialogue-area:hover { background-color: #2c3e50; }
+        .npc-name {
+            position: absolute; top: -20px; left: 30px; background-color: #e74c3c; color: white;
+            padding: 5px 20px; font-weight: bold; font-size: 1.2rem; border-radius: 5px; border: 2px solid #fff;
+        }
+        .npc-text { 
+            font-size: 1.3rem; line-height: 1.6; color: white; 
+            word-break: keep-all; 
+        }
+        .next-arrow {
+            position: absolute; bottom: 15px; right: 20px; font-size: 1.5rem; color: #ecf0f1;
+            animation: bounce 1s infinite;
+        }
+        .player-choice-area {
+            width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 15px;
+        }
+        .player-choice-btn {
+            background-color: #000; border: 2px solid #2ecc71; color: #2ecc71; padding: 20px;
+            font-size: 1.2rem; font-weight: bold; text-align: left; cursor: pointer; transition: all 0.2s; border-radius: 10px;
+            word-break: keep-all;
+        }
+        .player-choice-btn:hover { background-color: #2ecc71; color: #000; transform: translateX(10px); }
+        .player-choice-label {
+            display: inline-block; background: #2ecc71; color: black; padding: 2px 8px; font-size: 0.9rem; margin-right: 10px; border-radius: 3px;
+        }
+
+        /* === 메인 게임 스타일 === */
+        .game-bg {
+            background-image: repeating-linear-gradient(90deg, #2b2b2b 0px, #333 50px, #2b2b2b 100px);
+            width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: -1;
+        }
+        #top-bar {
+            width: 95%; max-width: 900px; background-color: #eee; color: #000;
+            border: 3px solid #000; border-radius: 5px; margin-top: 20px; padding: 10px 20px;
+            display: none; justify-content: space-between; align-items: center;
+            font-size: 1.1rem; font-weight: bold; box-shadow: 5px 5px 0px #000; z-index: 10;
+        }
+        .stat-item { display: flex; align-items: center; gap: 5px; }
+
+        #desk-area {
+            position: relative; width: 100%; max-width: 800px; height: 100%;
+            display: none; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;
+        }
+        #paper {
+            background-color: #fcf4cf; color: #000; width: 90%; max-width: 650px; padding: 30px;
+            border: 3px solid #000; box-shadow: 10px 10px 20px rgba(0,0,0,0.5);
+            transform: rotate(-1deg); min-height: 350px; position: relative; margin-bottom: 20px;
+            transition: all 0.3s ease; max-height: 70vh; overflow-y: auto;
+        }
+        #paper::before {
+            content: ''; position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+            width: 100px; height: 30px; background-color: #555; border-radius: 5px; border: 2px solid #000; z-index: 10;
+        }
+        #paper-title {
+            font-weight: 900; font-size: 1.8rem; border-bottom: 3px solid #000; padding-bottom: 10px; margin-top: 10px; margin-bottom: 20px;
+        }
+        .info-row { font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: flex-start; }
+        .bullet { margin-right: 10px; font-weight: bold; }
+        .label { font-weight: bold; min-width: 80px; }
+        .content { flex: 1; line-height: 1.5; }
+        #paper-content-box {
+            background-color: rgba(255,255,255,0.6); padding: 15px; border-radius: 5px; border: 1px solid #000; margin-top: 10px;
+            font-size: 1rem; white-space: pre-wrap; word-break: keep-all;
+        }
+
+        #button-area {
+            width: 90%; max-width: 700px; display: flex; flex-direction: column; gap: 15px; padding-bottom: 20px;
+        }
+        .action-btn {
+            display: flex; align-items: center; padding: 0; background: white; border: 3px solid #000;
+            box-shadow: 5px 5px 0px #000; cursor: pointer; transition: transform 0.1s; text-align: left;
+        }
+        .action-btn:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0px #000; }
+        .action-btn:hover { background-color: #f0f0f0; }
+        .btn-label {
+            padding: 15px 20px; font-size: 1.2rem; font-weight: bold; color: white;
+            border-right: 3px solid #000; min-width: 100px; text-align: center;
+        }
+        .btn-text { padding: 15px; font-size: 1.1rem; color: #000; font-weight: bold; flex: 1; word-break: keep-all; }
+        .theme-green .btn-label { background-color: #27ae60; }
+        .theme-red .btn-label { background-color: #c0392b; }
+        .theme-blue .btn-label { background-color: #2980b9; }
+        .theme-purple .btn-label { background-color: #8e44ad; }
+
+        #modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 100;
+        }
+        .modal-paper {
+            background: white; color: #000; border: 4px solid #000; padding: 30px; width: 500px;
+            text-align: center; box-shadow: 10px 10px 0px #333; transform: rotate(1deg);
+        }
+        .modal-title { font-weight: 900; font-size: 2.2rem; margin-bottom: 20px; }
+        .next-btn {
+            background: #000; color: white; border: none; padding: 10px 30px; font-size: 1.2rem; margin-top: 20px; cursor: pointer; font-weight: bold;
+        }
+
+        /* === 엔딩 페이퍼 스타일 === */
+        .ending-paper {
+            background-color: #fff !important; 
+            transform: rotate(0deg) !important; 
+            max-height: 75vh !important; overflow-y: auto !important;
+            display: flex; flex-direction: column;
+        }
+        .ending-content {
+            font-size: 1.1rem !important; line-height: 1.8 !important;
+            padding: 20px !important; background-color: transparent !important; border: none !important;
+            flex: 1; word-break: keep-all;
+        }
+        .fail-theme { border: 4px solid #d63031 !important; }
+        .fail-theme #paper-title { color: #d63031 !important; border-bottom: 4px solid #d63031 !important; text-align: center; margin-top: 0 !important; }
+        .success-theme { border: 4px solid #27ae60 !important; }
+        .success-theme #paper-title { color: #27ae60 !important; border-bottom: 4px solid #27ae60 !important; text-align: center; margin-top: 0 !important; }
+        .stamp {
+            margin-top: 30px; text-align: right; font-weight: bold; font-size: 1.3rem;
+            position: relative; margin-bottom: 20px;
+        }
+        .stamp::after {
+            content: '인'; position: absolute; top: -10px; right: -10px;
+            border: 3px solid; border-radius: 50%; width: 50px; height: 50px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.4rem; transform: rotate(-15deg); opacity: 0.7;
+            color: inherit; border-color: inherit;
+        }
+        .restart-btn {
+            display: block; margin: 20px auto 30px; padding: 12px 30px;
+            color: white; border: none; border-radius: 5px;
+            font-size: 1.1rem; font-weight: bold; cursor: pointer;
+            transition: transform 0.1s; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .restart-btn:hover { transform: scale(1.05); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+        @keyframes titlePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+
+        /* === 종이 교체 애니메이션 === */
+        .paper-slide-out { animation: slideOutLeft 0.5s forwards; }
+        .paper-slide-in { animation: slideInRight 0.5s forwards; }
+
+        @keyframes slideOutLeft {
+            to { transform: translateX(-150%) rotate(-5deg); opacity: 0; }
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(150%) rotate(5deg); opacity: 0; }
+            to { transform: translateX(0) rotate(-1deg); opacity: 1; }
+        }
+
+        /* 화면 전환 */
+        .fade-out-screen { opacity: 0 !important; transition: opacity 1s ease; pointer-events: none; }
+        .game-enter-active { opacity: 0; animation: slideUpFade 1.2s ease-out forwards; }
+        @keyframes slideUpFade {
+            0% { opacity: 0; transform: translateY(50px) scale(0.98); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 배경 -->
+    <div class="game-bg"></div>
+
+    <!-- 랜딩 -->
+    <div id="landing-screen">
+        <h1 class="landing-title">Viral Times</h1>
+        <div class="landing-subtitle">진실과 거짓의 경계, 당신의 선택은?</div>
+        <button class="main-start-btn" onclick="startIntro()">게임 시작하기</button>
+    </div>
+
+    <!-- 인트로 -->
+    <div id="intro-screen">
+        <h1 class="intro-title">Viral Times</h1>
+        <div class="intro-text" id="typewriter-text"></div>
+        <button class="start-btn" onclick="goToStory()">입사 수락 및 출근하기</button>
+    </div>
+
+    <!-- 스토리 -->
+    <div id="story-screen">
+        <div class="story-narration">
+            이수호는 2025년 10월 12일,<br>
+            KMS 방송국으로 첫 출근을 한다.<br><br>
+            주임 박서진에게 업무를 전달받는다.
+        </div>
+        <div class="dialogue-box">
+            <div class="speaker-name">주임 박서진</div>
+            <div class="dialogue-text">
+                “너가 할 일은 간단해.<br>
+                정보의 출처, 내용 작성 날짜를 확인하거나<br>
+                너가 직접 인터넷에서 자료를 찾아봐서<br>
+                정보를 기사화할지 말지 결정하면 돼.<br><br>
+                그럼 곧바로 시작해볼까?”
+            </div>
+        </div>
+        <button class="go-btn" onclick="startActualGame()">네, 알겠습니다! (업무 시작)</button>
+    </div>
+
+    <!-- [NEW] 날짜 및 이벤트 컷신 -->
+    <div id="day-transition-screen">
+        <div id="day-transition-text">DAY 01</div>
+        <div id="day-transition-event"></div>
+    </div>
+
+    <!-- 긴급 제보 알림창 -->
+    <div id="turn-notification"></div>
+
+    <!-- [NEW] 스마트폰 UI -->
+    <div id="smartphone-container">
+        <div id="smartphone-btn" onclick="togglePhone()">
+            📱<span id="msg-badge">N</span>
+        </div>
+        <div id="smartphone-screen">
+            <div class="phone-header">
+                <span>메시지</span>
+                <span class="close-phone" onclick="togglePhone()">✖</span>
+            </div>
+            <div class="phone-body" id="phone-msg-list">
+                <!-- 메시지가 여기에 쌓임 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 대화 오버레이 -->
+    <div id="dialogue-overlay">
+        <div class="npc-dialogue-area" id="npc-area" style="display:none;">
+            <div class="npc-name" id="npc-name">이름</div>
+            <div class="npc-text" id="npc-text">대화 내용</div>
+            <div class="next-arrow">▼</div>
+        </div>
+        <div class="player-choice-area" id="player-area" style="display:none;"></div>
+    </div>
+
+    <!-- 상단 바 -->
+    <div id="top-bar">
+        <div class="stat-item">📅 <span id="day-display">DAY 01</span></div>
+        <div class="stat-item">💰 수익: <span id="money-display">0</span> 만원</div>
+        <div class="stat-item">♥ 평판: <span id="rep-display">100</span>/100</div>
+        <div class="stat-item">🔔 이벤트: <span id="event-display" style="font-size:0.9rem;">없음</span></div>
+    </div>
+
+    <!-- 책상 -->
+    <div id="desk-area">
+        <div id="paper">
+            <div id="paper-title">[취재파일] #001</div>
+            <div id="metadata-area">
+                <div class="info-row"><span class="bullet">•</span><span class="label">정보 출처:</span><span class="content" id="paper-source"></span></div>
+                <div class="info-row"><span class="bullet">•</span><span class="label">작성자:</span><span class="content" id="paper-author"></span></div>
+                <div class="info-row"><span class="bullet">•</span><span class="label">작성일:</span><span class="content" id="paper-date"></span></div>
+            </div>
+            <div class="info-row" style="flex-direction: column;">
+                <div style="display:flex;" id="content-label-row"><span class="bullet">•</span><span class="label">정보 요약:</span></div>
+                <div id="paper-content-box"></div>
+            </div>
+        </div>
+        <div id="button-area"></div>
+    </div>
+
+    <!-- 결과 모달 -->
+    <div id="modal-overlay">
+        <div class="modal-paper">
+            <div class="modal-title" id="modal-title">결과 보고</div>
+            <p id="modal-msg" style="font-size: 1.2rem; font-weight: bold;">결과 메시지</p>
+            <div id="modal-impact" style="background:#eee; padding:10px; margin-top:10px; font-size:0.95rem; line-height:1.5;">사회적 영향</div>
+            <button class="next-btn" onclick="nextStep()">다음 업무 ▶</button>
+        </div>
+    </div>
+
+    <script>
+        // === 인트로 & 기본 함수 ===
+        const introTextContent = `귀하는 KMS 방송국의 건강부 온라인 수습기자로 채용되었습니다.\n\n빠르게 변하는 미디어 환경 속에서, 당신의 임무는 단 하나.\n자극적이고 흥미로운 건강 기사를 발행하여 방송국의 '수익'을 올리는 것입니다.\n\n하지만 기억하십시오. 기자의 생명은 '평판'입니다.\n단 하나의 오보가 당신의 경력을 끝낼 수 있습니다.\n\n진실과 거짓의 경계에서, 당신은 어떤 기자가 되겠습니까?`;
+
+        function startIntro() {
+            document.getElementById('landing-screen').style.display = 'none';
+            document.getElementById('intro-screen').style.display = 'flex';
+            typeWriter();
+        }
+
+        function typeWriter() {
+            const el = document.getElementById('typewriter-text');
+            if (el.innerHTML.length > 0) return; 
+            let i = 0; const speed = 30; 
+            function type() {
+                if (i < introTextContent.length) {
+                    el.innerHTML += introTextContent.charAt(i) === '\n' ? '<br>' : introTextContent.charAt(i);
+                    i++; setTimeout(type, speed);
+                }
+            }
+            type();
+        }
+
+        function goToStory() {
+            document.getElementById('intro-screen').style.display = 'none';
+            document.getElementById('story-screen').style.display = 'flex';
+        }
+
+        function startActualGame() {
+            const storyScreen = document.getElementById('story-screen');
+            const topBar = document.getElementById('top-bar');
+            const deskArea = document.getElementById('desk-area');
+            const phone = document.getElementById('smartphone-container');
+            
+            storyScreen.classList.add('fade-out-screen');
+            setTimeout(() => {
+                storyScreen.style.display = 'none'; 
+                topBar.style.display = 'flex';
+                deskArea.style.display = 'flex';
+                phone.style.display = 'block'; // 폰 등장
+                
+                topBar.classList.add('game-enter-active');
+                deskArea.classList.add('game-enter-active');
+                renderScenario();
+                
+                // 첫 메시지 전송
+                setTimeout(() => sendPhoneMessage("박서진 주임", "신입, 긴장 풀고 잘해봐. 첫 기사 기대한다."), 2000);
+            }, 1000);
+        }
+
+        // === Day Transition Logic ===
+        function showDayTransition(dayNum, eventName, callback) {
+            const screen = document.getElementById('day-transition-screen');
+            const dayText = document.getElementById('day-transition-text');
+            const eventText = document.getElementById('day-transition-event');
+            
+            dayText.innerText = "DAY 0" + dayNum;
+            if (eventName && eventName !== "없음") {
+                eventText.innerText = `< 이슈: ${eventName} >`;
+            } else {
+                eventText.innerText = "";
+            }
+
+            screen.style.display = 'flex';
+            dayText.classList.remove('day-anim-active');
+            eventText.classList.remove('day-anim-active');
+            void dayText.offsetWidth; // Reflow
+            dayText.classList.add('day-anim-active');
+            eventText.classList.add('day-anim-active');
+
+            setTimeout(() => {
+                screen.style.display = 'none';
+                if(callback) callback();
+            }, 3000); 
+        }
+
+        // === [NEW] 스마트폰 기능 ===
+        function togglePhone() {
+            const screen = document.getElementById('smartphone-screen');
+            const badge = document.getElementById('msg-badge');
+            
+            if (screen.style.display === 'flex') {
+                screen.style.display = 'none';
+            } else {
+                screen.style.display = 'flex';
+                badge.style.opacity = '0'; // 배지 숨김
+                // 스크롤 아래로
+                const body = document.getElementById('phone-msg-list');
+                body.scrollTop = body.scrollHeight;
+            }
+        }
+
+        function sendPhoneMessage(sender, text, isSystem = false) {
+            const list = document.getElementById('phone-msg-list');
+            const div = document.createElement('div');
+            
+            if (isSystem) {
+                div.className = 'msg-bubble system';
+                div.innerHTML = text;
+            } else {
+                div.className = 'msg-bubble';
+                div.innerHTML = `<span class="msg-sender">${sender}</span>${text}`;
+            }
+            
+            list.appendChild(div);
+            
+            // 알림 배지 표시
+            const screen = document.getElementById('smartphone-screen');
+            if (screen.style.display !== 'flex') {
+                const badge = document.getElementById('msg-badge');
+                badge.style.opacity = '1';
+            } else {
+                list.scrollTop = list.scrollHeight;
+            }
+        }
+
+        // === 시나리오 데이터 ===
+        const scenarios = [
+            // DAY 1
+            { id: "001", day: 1, type: "report", eventName: "없음", title: "[취재 파일] #001", source: "민간요법 연구소 '자연의 숨결'", author: "소장 박만수", date: "2025-09-30", content: "마늘, 콧속에 넣으면 만성 비염 99% 완치! 병원 갈 필요 없어...", choices: [ { label: "기사 발행", text: "충격! 병원도 모르는 비염 완치법?", theme: "theme-green", money: 500, rep: -20, msg: "자극적인 기사로 수익 +500만! 하지만 독자들이 응급실에 실려가며 평판 -20.", impact: "이상한 민간 요법이 퍼져 국민들의 건강 지수가 나빠졌습니다." }, { label: "정보 폐기", text: "(기사화하지 않음)", theme: "theme-red", money: 0, rep: 0, msg: "기사를 내지 않았습니다. 수익은 없지만 평판을 지켰습니다.", impact: "국민들 사이에서 이상한 민간 요법이 퍼지지 않았습니다." } ] },
+            { id: "002", day: 1, type: "report", eventName: "없음", title: "[취재 파일] #002", source: "건강복지부", author: "표시 안 됨", date: "2024-02", content: "필수의료 정책 보고서 (불공정 의료생태계 개선 정책)", choices: [ { label: "기사 발행", text: "건강복지부, 의료생태계 개선 정책 시행", theme: "theme-green", money: 100, rep: 10, msg: "수익은 적지만 유익한 정보로 평판 +10 상승!", impact: "국민들이 정책 정보를 알게 되어 복지 수준이 향상됩니다." }, { label: "정보 폐기", text: "(기사화하지 않음)", theme: "theme-red", money: 0, rep: -5, msg: "타 언론사가 대서특필했습니다. 'KMS는 느리다'는 비판으로 평판 -5.", impact: "타 언론사 보도로 정보는 전달되었으나, 우리 방송국의 신뢰도가 떨어졌습니다." } ] },
+            { id: "004", day: 1, type: "report", eventName: "없음", title: "[취재 파일] #004", source: "AI 검색 블로그", author: "김하지니", date: "2025-03-12", content: "홍초는 많이 먹을수록 좋다? 부작용 없음! (출처 불분명)", choices: [ { label: "기사 발행", text: "홍초의 비밀, 다다익선이다!", theme: "theme-green", money: 200, rep: -15, msg: "수익 +200만. 하지만 과잉섭취 위장장애 비판으로 평판 -15.", impact: "홍초 수요 증가와 함께 위장장애 환자가 늘어났습니다." }, { label: "정보 폐기", text: "(기사화하지 않음)", theme: "theme-red", money: 0, rep: 0, msg: "검증되지 않은 정보를 막았습니다. 평판 유지.", impact: "허위 정보 확산을 막았습니다." } ] },
+            // DAY 2
+            { id: "008", day: 2, type: "report", eventName: "환절기 감기 유행", title: "[취재 파일] #008", source: "한국대학교", author: "교수 노윤서", date: "2025-10-06", content: "방선균에서 슈퍼박테리아를 억제하는 물질 발견!", choices: [ { label: "기사 발행", text: "슈퍼박테리아 잡는 물질 발견!", theme: "theme-green", money: 100, rep: 0, msg: "새로운 과학 지식을 전달했습니다. 수익 +100만.", impact: "사람들에게 새로운 지식이 전달되었습니다." }, { label: "정보 폐기", text: "(기사화하지 않음)", theme: "theme-red", money: 0, rep: 0, msg: "아무런 변화가 없습니다.", impact: "아무 변화 없음." } ] },
+            { id: "011", day: 2, type: "report", eventName: "환절기 감기 유행", title: "[취재 파일] #011", source: "달평 허브 연구소", author: "연구원 김종우", date: "2010-04-24", content: "허브 로즈마리의 향이 목감기 치료에 도움이 된다.", choices: [ { label: "기사 발행", text: "로즈마리 향기, 목감기에 효과?", theme: "theme-green", money: 200, rep: -10, msg: "수익 +200만. 하지만 2010년 자료이며 효과 없음이 밝혀짐. 평판 -10.", impact: "유사과학이 퍼졌습니다." }, { label: "정보 폐기", text: "(기사화하지 않음)", theme: "theme-red", money: 0, rep: 0, msg: "유사과학 확산을 막았습니다.", impact: "유사과학이 퍼지는 것을 막았습니다." } ] },
+            { id: "013", day: 2, type: "report", eventName: "환절기 감기 유행", title: "[취재 파일] #013", source: "SNS 인별리터", author: "Lingcolin7294", date: "2024-07-19", content: "제로 칼로리 아스파탐이 뇌 건강에도 좋다?", choices: [ { label: "기사 발행", text: "제로 아스파탐, 뇌 건강까지 챙긴다?", theme: "theme-green", money: 300, rep: -20, msg: "수익 +300만. 하지만 전문가들의 비판으로 평판 -20.", impact: "잘못된 정보로 단맛 중독 환자가 증가했습니다." }, { label: "정보 폐기", text: "(기사화하지 않음)", theme: "theme-red", money: 0, rep: 0, msg: "허위 사실 유포를 막았습니다.", impact: "허위 정보가 차단되었습니다." } ] },
+            // DAY 3
+            { 
+                id: "event_day3", day: 3, type: "event", eventName: "방문자 발생",
+                // [NEW] 뇌물 제안 메시지 예약
+                phoneMsg: { sender: "발신자 표시제한", text: "계좌 확인해보세요. 섭섭지 않게 넣었습니다." },
+                dialogueScript: [ { speaker: "narrator", text: "누군가가 당신의 사무실로 찾아왔습니다." }, { speaker: "당신", text: "실례지만, 누구신가요?" }, { speaker: "의문의 사람", text: "소개가 늦었네요. 저는 스포츠하비사의 매니저 한시율입니다." }, { speaker: "당신", text: "무슨 일로 오셨나요?" }, { speaker: "한시율", text: "본론만 말하죠. 곧 있으면 민설대학교의 논문이 그쪽으로 갈 겁니다.<br>비용을 드릴테니 그 정보는 폐기해주십쇼." }, { speaker: "당신", text: "언론 조작을 하라는 건가요?" }, { speaker: "한시율", text: "하하하! 저는 그저 ‘권고’를 해드렸을 뿐입니다.<br>그 듣보잡 지방대의 정보는 딱 보기에도 믿을 만한 것이 못 될 것 같지 않나요?<br>그럼 당신에게 맡기겠습니다. 안녕히계십시오." } ], title: "[취재 파일 #015]", source: "민설대학교", author: "대학원생 이한승", date: "2025년 10월 1일", content: "“유명한 스포츠하비사의 스포츠 드링크가 심장에 직접적으로 손상을 준다.”", choices: [ { label: "기사 발행", text: "(제안 거절) 충격! 드링크의 심장 손상 위험", theme: "theme-green", money: 100, rep: 0, msg: "투자가 끊겨 수익이 감소했다가 회복(+100만). 평판 유지.", impact: "스포츠하비사 매출 감소. 국민 건강을 지켰습니다." }, { label: "정보 폐기", text: "(뇌물 수락) 보도하지 않음", theme: "theme-purple", money: 700, rep: 0, msg: "뇌물로 수익 +700만. 평판 변화 없음(들키지 않음).", impact: "심장병 발병률이 높아진 것 같지만... 통장 잔고는 두둑합니다." } ] 
+            },
+            
+            // === 연계성 강화된 다중 페이지 ===
+            { 
+                id: "016_multi", day: 3, type: "report", eventName: "상반된 자료 도착", isMultiPage: true, 
+                pages: [ 
+                    { 
+                        title: "[취재 파일 #016]", source: "대건대학병원 가정의학과", author: "김영수 교수", date: "2025-10-10", 
+                        content: "최근 10년간 국민 건강 데이터 분석 결과, 아침형 인간이 저녁형 인간보다 대사증후군 발병률이 1.3배 낮음." 
+                    }, 
+                    { 
+                        title: "[취재 파일 #017] (추가 제보)", source: "대건대학병원 내분비대사내과", author: "김일수 교수", date: "2025-10-13", 
+                        content: "아침형 인간과 저녁형 인간의 대사증후군은 통계적 유의미성일 뿐 아무런 인과관계가 없다.",
+                        transitionAlert: "🚨 긴급 제보 도착!\n\n'앞선 자료는 통계적 오류가 있습니다.'\n반박 자료를 확인하십시오."
+                    } 
+                ], 
+                choices: [ 
+                    { label: "기사 발행", text: "아침형 인간 필수! 안 하면 대사증후군?", theme: "theme-green", money: 700, rep: -30, msg: "자극적 제목으로 수익 +700만! 그러나 연구 왜곡으로 정정보도 요청. 평판 -30.", impact: "아침형 인간 강박증이 사회에 퍼졌습니다." }, 
+                    { label: "팩트 체크", text: "'아침형 인간=건강' 인과관계 불명확", theme: "theme-blue", money: 400, rep: 10, msg: "수익 +400만. 신뢰할 수 있는 언론 평판 +10.", impact: "국민들의 건강 상식이 한층 성숙해졌습니다." }, 
+                    { label: "정보 폐기", text: "(보도하지 않음)", theme: "theme-red", money: 0, rep: 0, msg: "보도하지 않았습니다.", impact: "아무 영향 없음." } 
+                ] 
+            },
+
+            { id: "020", day: 3, type: "report", eventName: "없음", title: "[취재 파일] #020", source: "숏폼 (토토기의 네일아트)", author: "크리에이터", date: "2025-10-14", content: "계란 단백질이 손톱에 좋다? (출처는 별로지만 팩트는 맞음)", choices: [ { label: "기사 발행", text: "튼튼한 손톱을 원해? 계란을 먹어라!", theme: "theme-green", money: 500, rep: 30, msg: "팩트 확인 후 기사화! 유익한 정보로 수익 +500, 평판 +30.", impact: "계란 매출이 늘고 손톱 건강에 관심이 높아졌습니다." }, { label: "정보 폐기", text: "(기사화하지 않음)", theme: "theme-red", money: 0, rep: 0, msg: "상사가 당신이 네일아트에 관심 있는 줄 오해합니다.", impact: "아무 영향 없음." } ] },
+            // DAY 4
+            // === 박서진 주임 대화 이벤트 추가 ===
+            { 
+                id: "memo_day4", day: 4, type: "report", eventName: "긴급 지시",
+                // [NEW] 독촉 메시지 예약
+                phoneMsg: { sender: "박서진 주임", text: "야!!! 기사 아직이야?? 다른 데서 선수 치겠다고!!" },
+                dialogueScript: [
+                    { speaker: "narrator", text: "(다급한 발걸음 소리와 함께 박서진 주임이 당신의 자리로 뛰어옵니다.)" },
+                    { speaker: "주임 박서진", text: "야! 지금 한가하게 팩트체크나 하고 있을 때가 아니야!" },
+                    { speaker: "당신", text: "네? 무슨 일이시죠?" },
+                    { speaker: "주임 박서진", text: "지금 실시간 검색어 1위가 '슈퍼 푸드 OOO'야!<br>사람들이 미친 듯이 검색하고 있다고!" },
+                    { speaker: "주임 박서진", text: "다른 언론사들이 채가기 전에 우리가 먼저 터뜨려야 해.<br>검증 같은 건 나중에 하고 일단 조회수부터 빨아오란 말이야!<br>당장 써!" }
+                ],
+                title: "[긴급 지시사항]", 
+                source: "박서진 주임", author: "보도국", date: "2025-10-15 (현재)", 
+                content: "주임 박서진의 지시: \n'슈퍼 푸드 OOO'에 대한 찬양 기사를 당장 작성할 것.\n(검증 절차 생략 요구)", 
+                choices: [ 
+                    { label: "지시 이행", text: "열풍! 슈퍼 푸드 OOO, 안 먹어본 사람 없다?", theme: "theme-green", money: 1200, rep: -40, msg: "수익 +1200만 폭증! 그러나 중금속 검출 발표로 최악의 오보 사태. 평판 -40.", impact: "수많은 사람들이 중금속 중독 피해를 입었습니다.", jumpTo: 2 }, 
+                    { label: "사실 확인", text: "(보류하고 식약처 자료 확인)", theme: "theme-blue", money: 0, rep: 0, msg: "당신은 기사를 보류하고 식약처 자료를 찾아봅니다.", impact: "팩트 체크를 시작합니다.", jumpTo: 1 } 
+                ] 
+            },
+            { id: "022", day: 4, type: "report", eventName: "긴급 지시", title: "[취재 파일] #022", source: "식품의약품안전처", author: "공식 발표", date: "2025-10-15", content: "슈퍼 푸드 OOO에서 비소, 카드뮴 등 중금속 기준치 초과 검출.", choices: [ { label: "기사 발행", text: "경악! 슈퍼 푸드 OOO에 중금속 다량 검출", theme: "theme-green", money: 900, rep: 50, msg: "특종! 수익 +900만. 국민 건강을 지킨 정직한 언론으로 평판 +50 대폭발!", impact: "중금속 피해를 막고 엄청난 신뢰를 얻었습니다." }, { label: "정보 폐기", text: "(보도하지 않음)", theme: "theme-red", money: 0, rep: -20, msg: "늑장 대응으로 비판 받음. 평판 -20.", impact: "많은 사람들이 정보를 늦게 접해 피해를 입었습니다." } ] },
+            { id: "023", day: 4, type: "report", eventName: "긴급 지시", title: "[취재 파일] #023", source: "영전회사 산하 연구소", author: "연구원 일동", date: "2025-10-15", content: "3일 만에 통증 완화! 지금 바로 주문하세요 (링크 포함)", choices: [ { label: "기사 발행", text: "[단독] 3일 만에 통증 완화? 신약 효능 입증", theme: "theme-green", money: 300, rep: -25, msg: "광고성 기사 비판! 평판 -25, 수익 +300.", impact: "독자들의 항의가 빗발칩니다." }, { label: "광고팀 이관", text: "(광고로 넘김)", theme: "theme-blue", money: 30, rep: 0, msg: "기사 대신 광고로 넘김. 수익 소폭(+30) 발생.", impact: "별다른 영향 없음." }, { label: "정보 폐기", text: "(폐기함)", theme: "theme-red", money: 0, rep: 0, msg: "폐기했습니다.", impact: "영향 없음." } ] },
+            { id: "event_day4_bribe", day: 4, type: "event", eventName: "방문자 발생", title: "[이벤트] 안심제약 마케팅부", source: "안심제약", author: "안은율", date: "현재", content: "방문자: '보도자료 그대로 써주시면 광고비 2,000만원 즉시 입금해드립니다.'", choices: [ { label: "제안 수락", text: "(광고비 받고 기사 작성)", theme: "theme-purple", money: 2000, rep: -50, msg: "수익 +2,000만! 하지만 내부 감사에 걸려 '부정 청탁' 징계. 평판 -50.", impact: "영양제 효과는 없었고, 당신의 비리가 소문났습니다." }, { label: "제안 거절", text: "(거절함)", theme: "theme-red", money: 0, rep: 0, msg: "거절했습니다. 당신의 청렴함이 빛납니다.", impact: "아무 영향 없음." } ] },
+            // DAY 5
+            // [NEW] Day 5 Intro Event - Audit Warning
+            {
+                id: "event_day5_audit", day: 5, type: "event", eventName: "방송국 감사 예정",
+                // [NEW] 감사 관련 메시지 예약
+                phoneMsg: { sender: "동기 김철수", text: "지금 감사팀 3층 도착. 책상 정리해." },
+                dialogueScript: [
+                    { speaker: "narrator", text: "(평소와 달리 사무실 분위기가 무겁습니다. 박서진 주임이 당신에게 다가옵니다.)" },
+                    { speaker: "주임 박서진", text: "어이, 수습. 오늘 무슨 날인지 알지?" },
+                    { speaker: "당신", text: "달력을 보니... 방송국 감사 날이네요." },
+                    { speaker: "주임 박서진", text: "그래. 오늘 감사팀이 들이닥쳐서 우리가 쓴 기사들을 이 잡듯이 뒤질 거야." },
+                    { speaker: "주임 박서진", text: "만약 오늘 <b>허위 사실</b>을 유포하거나, 기업과 유착해서 <b>편파 보도</b>를 한 게 걸리면..." },
+                    { speaker: "주임 박서진", text: "그 자리에서 바로 <b>짐 싸서 나가야 할 거야.</b> 수습이라고 봐주는 거 없다." },
+                    { speaker: "당신", text: "(침을 꼴깍 삼킨다) 명심하겠습니다." },
+                    { speaker: "주임 박서진", text: "오늘 들어오는 정보들은 특히 더 꼼꼼하게 확인해. 한 번의 실수가 끝장이야. 알겠어?" }
+                ],
+                title: "[사내 공지] 정기 감사 실시",
+                source: "KMS 감사팀", author: "감사팀장", date: "2025-10-16",
+                content: "금일 09:00부터 보도국 정기 감사가 실시됩니다.\n\n주요 점검 사항:\n1. 기사 내용의 사실 여부 (팩트 체크)\n2. 광고성/편파성 보도 여부\n\n위반 사항 적발 시 내규에 따라 중징계 처리함.",
+                choices: [
+                    { label: "업무 시작", text: "네, 알겠습니다! (긴장하며 업무 시작)", theme: "theme-blue", money: 0, rep: 0, msg: "감사팀의 눈을 피해 실적을 올려야 합니다.", impact: "긴장감 고조." }
+                ]
+            },
+            { id: "025", day: 5, type: "report", eventName: "방송국 감사 예정", title: "[취재 파일] #025", source: "유튜버 '닥터 팩트'", author: "현직 의사", date: "2025-10-09", content: "생기플러스 영양제는 사기극이다! 식약처와 결탁했다! (확인 필요)", choices: [ { label: "기사 발행", text: "80만 의사 유튜버, '영양제는 사기극' 폭로!", theme: "theme-green", money: 900, rep: -100, msg: "조회수 폭발(+900)! 그러나 허위사실 유포로 판명나 평판 바닥(GAME OVER).", impact: "공중 보건 불신 조장으로 사회적 혼란 야기.", jumpTo: 2 }, { label: "정보 폐기", text: "(무시함)", theme: "theme-red", money: 0, rep: 0, msg: "유보했습니다.", impact: "영향 없음.", jumpTo: 2 }, { label: "교차 검증", text: "(추가 자료 조사)", theme: "theme-blue", money: 0, rep: 0, msg: "추가 자료를 조사합니다.", impact: "신중한 태도입니다.", jumpTo: 1 } ] },
+            { id: "026", day: 5, type: "report", eventName: "방송국 감사 예정", title: "[취재 파일] #026", source: "한국대학교 식품영양학과", author: "이수한 교수", date: "2025-10-11", content: "생기플러스는 비타민과 미네랄을 포함한 효과 있는 영양제가 맞다.", choices: [ { label: "기사 발행", text: "[팩트체크] 생기플러스 영양제에 대한 진실", theme: "theme-green", money: 300, rep: 20, msg: "오보를 막고 진실을 알렸습니다! 수익 +300, 평판 +20.", impact: "국민들이 허위 정보에 휘둘리지 않았습니다." }, { label: "기사 발행", text: "논란! '닥터 팩트', 허위 사실 유포?", theme: "theme-green", money: 800, rep: -10, msg: "수익 +800. 하지만 명예훼손 고소 당함. 평판 -10.", impact: "닥터 팩트를 불신하게 되었습니다." }, { label: "정보 폐기", text: "(보도하지 않음)", theme: "theme-red", money: 0, rep: -10, msg: "결과물 없음. 평판 -10.", impact: "영향 없음." } ] },
+            { id: "028", day: 5, type: "report", eventName: "방송국 감사 예정", title: "[취재 파일] #028", source: "한국치과협회", author: "홍보팀", date: "2024-12-29", content: "산성 음식 섭취 후엔 바로 닦지 말고 30분 뒤에 닦으세요.", choices: [ { label: "기사 발행", text: "당신도 틀렸다! 올바른 칫솔질 시간 공개", theme: "theme-green", money: 200, rep: 10, msg: "유익한 생활 정보! 수익 +200, 평판 +10.", impact: "국민 치아 건강이 개선되었습니다." }, { label: "정보 폐기", text: "(기사화하지 않음)", theme: "theme-red", money: 0, rep: -10, msg: "타 방송사가 먼저 보도했습니다. 뒷북 쳐서 평판 -10.", impact: "타 방송사 덕분에 국민 치아 건강이 개선되었습니다." } ] },
+            { id: "030", day: 5, type: "report", eventName: "방송국 감사 예정", title: "[취재 파일] #030", source: "글로벌 헬스 리서치 (ABC제약 연구비 지원)", author: "강우민", date: "2025-10-13", content: "ABC제약 '아르파민' 수면 유도 30% 빠름. (이해관계 명시됨)", choices: [ { label: "기사 발행", text: "단독! '딥슬립' 영양제, 빠른 수면 효과 입증", theme: "theme-green", money: 500, rep: -100, msg: "편파 보도 비판! 평판 0이 되어 즉시 해고됩니다.", impact: "편파적 정보 확산.", gameOver: true }, { label: "정보 폐기", text: "(폐기함)", theme: "theme-red", money: 0, rep: 0, msg: "편파적인 상업 정보를 걸러냈습니다.", impact: "영향 없음." } ] },
+            { id: "032", day: 5, type: "report", eventName: "방송국 감사 예정", title: "[취재 파일] #032", source: "사이언스 인용 (2012년 자료)", author: "존 깁플", date: "2012-05-08", content: "동물 실험 단계에서 체중 감량 효과... (오래되고 유해 가능성 있음)", choices: [ { label: "기사 발행", text: "입증된 기적의 다이어트 유산균!", theme: "theme-green", money: 300, rep: -100, msg: "부작용 속출! 평판 바닥(0). 즉시 해고됩니다.", impact: "국민 건강 심각한 위협.", gameOver: true }, { label: "정보 폐기", text: "(폐기함)", theme: "theme-red", money: 0, rep: 0, msg: "오래되고 위험한 정보를 막았습니다.", impact: "영향 없음." } ] },
+            { id: "035", day: 5, type: "report", eventName: "방송국 감사 예정", title: "[취재 파일] #035", source: "KMS 방송국 DB", author: "제작팀", date: "2025-10-16", content: "오늘밤 '참된 의사' 고혈압 편 방송 예고. 명의 최명제 교수 출연.", choices: [ { label: "기사 발행", text: "순환기내과 최고 명의가 밝히는 고혈압의 모든 것", theme: "theme-green", money: 1000, rep: 20, msg: "홍보와 공익 동시 달성! 수익 +1000, 평판 +20.", impact: "고혈압 발병률 감소에 기여했습니다." }, { label: "정보 폐기", text: "(기사화하지 않음)", theme: "theme-red", money: 0, rep: -10, msg: "자사 프로그램 홍보도 안 하냐며 질책 받음. 평판 -10.", impact: "정보 전달 실패." } ] }
+        ];
+
+        let currentState = { idx: 0, money: 0, rep: 100, dialogueStep: 0, subPageIndex: 0, lastRenderedDay: 0 };
+        
+        function resetGame() {
+            currentState = { idx: 0, money: 0, rep: 100, dialogueStep: 0, subPageIndex: 0, lastRenderedDay: 0 };
+            document.getElementById('landing-screen').style.display = 'none'; 
+            document.getElementById('story-screen').style.display = 'none';
+            document.getElementById('intro-screen').style.display = 'none';
+            document.getElementById('top-bar').style.display = 'flex';
+            document.getElementById('desk-area').style.display = 'flex';
+            document.getElementById('modal-overlay').style.display = 'none';
+            document.getElementById('dialogue-overlay').style.display = 'none';
+            document.getElementById('day-transition-screen').style.display = 'none';
+            document.getElementById('turn-notification').style.display = 'none';
+            
+            scenarios.forEach(s => { if(s.dialogueScript) s.dialoguePlayed = false; });
+            
+            // 용지 스타일 초기화
+            const paper = document.getElementById('paper');
+            paper.className = ''; paper.style.transform = 'rotate(-1deg)'; paper.style.border = "3px solid #000";
+            document.getElementById('paper-title').className = '';
+            document.getElementById('paper-content-box').className = '';
+            document.getElementById('metadata-area').style.display = 'block';
+            document.getElementById('content-label-row').style.display = 'flex';
+            
+            renderScenario();
+        }
+
+        function renderScenario() {
+            if (currentState.idx >= scenarios.length) { showEnding("success"); return; }
+            const s = scenarios[currentState.idx];
+
+            if (s.day > currentState.lastRenderedDay) {
+                showDayTransition(s.day, s.eventName, () => {
+                    currentState.lastRenderedDay = s.day; 
+                    renderScenario(); 
+                });
+                return; 
+            }
+
+            // === [NEW] 스마트폰 메시지 체크 로직 ===
+            if (s.phoneMsg && !s.phoneMsgSent) {
+                setTimeout(() => {
+                    sendPhoneMessage(s.phoneMsg.sender, s.phoneMsg.text);
+                }, 1500); // 1.5초 후 도착
+                s.phoneMsgSent = true; // 중복 발송 방지
+            }
+
+            document.getElementById('day-display').innerText = `DAY 0${s.day}`;
+            document.getElementById('money-display').innerText = currentState.money.toLocaleString();
+            document.getElementById('rep-display').innerText = currentState.rep;
+            document.getElementById('event-display').innerText = s.eventName;
+
+            const paper = document.getElementById('paper');
+            // 만약 엔딩 화면 상태였다면 초기화
+            if (paper.classList.contains('ending-paper')) {
+                 paper.className = ''; paper.style.transform = 'rotate(-1deg)'; paper.style.border = "3px solid #000";
+            }
+            document.getElementById('metadata-area').style.display = 'block';
+            document.getElementById('content-label-row').style.display = 'flex';
+
+            let currentContent = s;
+            if (s.isMultiPage && s.pages) currentContent = s.pages[currentState.subPageIndex];
+
+            document.getElementById('paper-title').innerText = currentContent.title;
+            document.getElementById('paper-title').className = '';
+            document.getElementById('paper-source').innerText = currentContent.source;
+            document.getElementById('paper-author').innerText = currentContent.author;
+            document.getElementById('paper-date').innerText = currentContent.date;
+            document.getElementById('paper-content-box').innerText = currentContent.content;
+
+            const btnContainer = document.getElementById('button-area');
+            btnContainer.innerHTML = ""; 
+
+            if (s.dialogueScript && !s.dialoguePlayed) { startDialogue(s); return; }
+
+            if (s.isMultiPage && currentState.subPageIndex < s.pages.length - 1) {
+                const btn = document.createElement('div');
+                btn.className = `action-btn theme-blue`;
+                btn.onclick = () => nextSubPage();
+                btn.innerHTML = `<div class="btn-label">▶</div><div class="btn-text">다음 정보 확인 (새로운 제보 도착!)</div>`;
+                btnContainer.appendChild(btn);
+            } else {
+                s.choices.forEach(choice => {
+                    const btn = document.createElement('div');
+                    btn.className = `action-btn ${choice.theme}`;
+                    btn.onclick = () => handleChoice(choice);
+                    btn.innerHTML = `<div class="btn-label">${choice.label}</div><div class="btn-text">${choice.text}</div>`;
+                    btnContainer.appendChild(btn);
+                });
+            }
+        }
+
+        // === [NEW] 다음 서브페이지 전환 (애니메이션 & 알림 추가) ===
+        function nextSubPage() {
+            const currentScenario = scenarios[currentState.idx];
+            const nextPageIdx = currentState.subPageIndex + 1;
+            const nextPageData = currentScenario.pages[nextPageIdx];
+            
+            const paper = document.getElementById('paper');
+
+            // 1. 만약 다음 페이지에 알림(transitionAlert)이 있다면
+            if (nextPageData.transitionAlert) {
+                // (1) 현재 종이 슬라이드 아웃
+                paper.classList.add('paper-slide-out');
+
+                // (2) 알림창 표시
+                const noti = document.getElementById('turn-notification');
+                noti.innerText = nextPageData.transitionAlert;
+                noti.style.display = 'block';
+
+                // (3) 잠시 대기 후 종이 내용 교체 및 슬라이드 인
+                setTimeout(() => {
+                    currentState.subPageIndex++; // 인덱스 증가
+                    paper.classList.remove('paper-slide-out');
+                    
+                    // 내용 렌더링 (이 시점엔 아직 안 보임, opacity 0)
+                    renderScenario();
+                    
+                    // (4) 슬라이드 인 애니메이션
+                    paper.classList.add('paper-slide-in');
+                    
+                    // (5) 알림 숨기기
+                    setTimeout(() => {
+                        noti.style.display = 'none';
+                        paper.classList.remove('paper-slide-in'); // 애니메이션 클래스 정리
+                    }, 1500);
+
+                }, 800); // 슬라이드 아웃 시간과 맞춤
+            } else {
+                // 일반적인 페이지 넘김
+                currentState.subPageIndex++;
+                renderScenario();
+            }
+        }
+
+        function startDialogue(scenario) {
+            currentState.dialogueStep = 0;
+            document.getElementById('dialogue-overlay').style.display = 'flex';
+            showDialogueStep(scenario);
+        }
+
+        function showDialogueStep(scenario) {
+            const script = scenario.dialogueScript;
+            const currentLine = script[currentState.dialogueStep];
+            const npcArea = document.getElementById('npc-area');
+            const playerArea = document.getElementById('player-area');
+
+            if (currentLine.speaker === "당신") {
+                npcArea.style.display = 'none'; playerArea.style.display = 'flex'; playerArea.innerHTML = ''; 
+                const btn = document.createElement('div');
+                btn.className = 'player-choice-btn';
+                btn.innerHTML = `<span class="player-choice-label">▶ 선택</span> ${currentLine.text}`;
+                btn.onclick = function() { nextDialogue(scenario); };
+                playerArea.appendChild(btn);
+            } else {
+                playerArea.style.display = 'none'; npcArea.style.display = 'flex';
+                const nameTag = document.getElementById('npc-name');
+                nameTag.innerText = currentLine.speaker === "narrator" ? "알림" : currentLine.speaker;
+                nameTag.style.backgroundColor = currentLine.speaker === "narrator" ? "#7f8c8d" : "#e74c3c";
+                
+                // [NEW] innerText -> innerHTML 로 변경하여 <br> 적용
+                document.getElementById('npc-text').innerHTML = currentLine.text;
+                
+                npcArea.onclick = function() { nextDialogue(scenario); };
+            }
+        }
+
+        function nextDialogue(scenario) {
+            if (!scenario) scenario = scenarios[currentState.idx];
+            currentState.dialogueStep++;
+            if (currentState.dialogueStep >= scenario.dialogueScript.length) {
+                document.getElementById('dialogue-overlay').style.display = 'none';
+                scenario.dialoguePlayed = true; renderScenario(); 
+            } else { showDialogueStep(scenario); }
+        }
+
+        function handleChoice(choice) {
+            currentState.money += choice.money; currentState.rep += choice.rep;
+            if (currentState.rep > 100) currentState.rep = 100;
+
+            const modal = document.getElementById('modal-overlay');
+            const nextBtn = document.querySelector('.next-btn');
+            
+            if (currentState.rep <= 0 || choice.gameOver) {
+                modal.style.display = "none"; showEnding("fail");
+            } else {
+                document.getElementById('modal-title').innerText = "결과 보고";
+                document.getElementById('modal-title').style.color = "black";
+                document.getElementById('modal-msg').innerText = choice.msg;
+                document.getElementById('modal-impact').innerText = "사회적 영향: " + choice.impact;
+                nextBtn.innerText = "다음 업무 ▶";
+                nextBtn.onclick = nextStep;
+                
+                if (choice.jumpTo) currentState.nextIdx = currentState.idx + choice.jumpTo;
+                else currentState.nextIdx = currentState.idx + 1;
+                modal.style.display = "flex";
+            }
+        }
+
+        function nextStep() {
+            document.getElementById('modal-overlay').style.display = "none";
+            currentState.idx = currentState.nextIdx; currentState.subPageIndex = 0; 
+            renderScenario();
+        }
+
+        // === 문서 기반 엔딩 시스템 ===
+        function showEnding(type) {
+            document.getElementById('modal-overlay').style.display = 'none';
+            const paper = document.getElementById('paper');
+            const title = document.getElementById('paper-title');
+            const contentBox = document.getElementById('paper-content-box');
+            const btnArea = document.getElementById('button-area');
+            const metadata = document.getElementById('metadata-area');
+            const labelRow = document.getElementById('content-label-row');
+
+            metadata.style.display = 'none';
+            labelRow.style.display = 'none';
+            btnArea.innerHTML = "";
+            paper.className = 'ending-paper';
+
+            if (type === "fail") {
+                paper.classList.add('fail-theme');
+                title.innerText = "해고 통지서";
+                contentBox.className = 'ending-content';
+                contentBox.innerHTML = `
+<div style="text-align:center; font-size:3rem; margin-bottom:10px;">📉</div>
+수신: 온라인 뉴스부 수습기자 귀하<br><br>
+귀하는 수습 기간 중 심각한 평판 하락 및 허위 사실 유포로 인해 방송국의 신뢰도를 심각하게 훼손하였습니다.<br>
+이에 방송언론미디어심의위원회로부터 중징계를 받았으며, 당사 인사위원회는 귀하와의 고용 계약을 지속할 수 없다고 판단하였습니다.<br><br>
+<strong>징계 사유:</strong><br>
+1. 검증되지 않은 정보 무분별한 기사화<br>
+2. 이해관계가 얽힌 편파적 보도로 인한 공정성 훼손<br>
+3. 결과적으로 국민의 알 권리 침해 및 공익 저해<br><br>
+**최종 기록:**<br>
+- 최종 평판: ${currentState.rep} / 100<br>
+- 최종 수익: ${currentState.money.toLocaleString()} 만원<br><br>
+위와 같은 사유로 귀하를 해고합니다.
+<div class="stamp" style="color:#d63031;">KMS 방송국 인사위원회</div>
+<button class="restart-btn" style="background-color:#d63031;" onclick="resetGame()">처음부터 다시 시작하기</button>
+                `;
+            } else {
+                paper.classList.add('success-theme');
+                title.innerText = "정규직 임명장";
+                contentBox.className = 'ending-content';
+                contentBox.innerHTML = `
+<div style="text-align:center; font-size:3rem; margin-bottom:10px;">🎉</div>
+수신: 온라인 뉴스부 수습기자 이수호<br><br>
+귀하는 5일간의 수습 기간 동안 탁월한 업무 능력과 준수한 평판 관리를 보여주었습니다.
+이에 당사 인사위원회는 귀하를 **정규직 기자**로 채용하기로 결정하였습니다.<br><br>
+**최종 평가:**<br>
+- 💰 누적 수익: ${currentState.money.toLocaleString()} 만원<br>
+- ♥ 최종 평판: ${currentState.rep} / 100<br><br>
+앞으로도 KMS 방송국의 핵심 인재로서 '진실'과 '수익' 사이에서 현명한 줄타기를 기대합니다. 환영합니다!
+<div class="stamp success-stamp">KMS 방송국 사장</div>
+<button class="restart-btn" style="background-color:#27ae60;" onclick="resetGame()">새로운 마음으로 다시 시작하기</button>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
